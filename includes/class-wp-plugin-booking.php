@@ -720,7 +720,7 @@ class WP_Plugin_Booking {
            $discount  = floatval( get_post_meta( $id, '_wpb_discount_percent', true ) );
            $disc_min  = absint( get_post_meta( $id, '_wpb_discount_min', true ) );
            $image_url = get_the_post_thumbnail_url( $id, 'large' );
-           echo '<div class="col-md-6 col-lg-4 mb-4 wpb-service">';
+           echo '<div class="col-md-6 col-lg-4 col-xl-3 mb-4 wpb-service">';
            echo '<div class="hotel-card" style="background-image:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url(' . esc_url( $image_url ) . ');">';
 
             if ( $price ) {
