@@ -627,7 +627,7 @@ class WP_Plugin_Booking {
 
         echo '<section class="hero">';
         echo '<h1 class="hero-title">' . esc_html( $hero_title ) . '</h1>';
-        echo '<p class="hero-subtitle">' . esc_html( $hero_subtitle ) . '</p>';
+        echo '<p class="hero-intro">' . esc_html( $hero_subtitle ) . '</p>';
         echo '</section>';
         echo '<section class="catalog" id="tours">';
         echo '<div class="wpb-catalog-search text-center mb-4">';
