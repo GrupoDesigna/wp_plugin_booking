@@ -96,6 +96,11 @@ jQuery(document).ready(function($){
 
             $.post(wpbCatalog.ajax_url, form.serialize(), function(response){
                 if(response.success){
+                    var modalEl = form.closest('.modal')[0];
+                    if(modalEl){
+                        var instance = bootstrap.Modal.getInstance(modalEl);
+                        if(instance){ instance.hide(); }
+                    }
                     Swal.fire({
                         icon: 'success',
                         title: '¡Reserva realizada con éxito!'
