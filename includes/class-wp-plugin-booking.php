@@ -729,6 +729,7 @@ class WP_Plugin_Booking {
                     ? wc_price( $price, array( 'currency' => 'DOP' ) )
                     : number_format_i18n( $price, 2 ) . ' DOP';
                 echo '<div class="price-tag"><span class="currency">Desde</span> ' . wp_kses_post( $price_html ) . '</div>';
+
             }
             if ( $discount > 0 ) {
                 echo '<div class="sale-badge">' . sprintf( esc_html__( 'Oferta %d%%', 'wp-plugin-booking' ), $discount ) . '</div>';
