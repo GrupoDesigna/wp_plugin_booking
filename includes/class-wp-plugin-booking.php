@@ -696,17 +696,6 @@ class WP_Plugin_Booking {
         echo '<main class="wpb-main">';
         echo '<div class="wpb-container">';
 
-        $terms = get_terms( array( 'taxonomy' => 'wpb_service_category', 'hide_empty' => false ) );
-        echo '<aside class="wpb-sidebar"><form method="get"><ul class="category-menu">';
-        $active = $category ? $category : 0;
-        $sel    = 0 === $active ? ' active' : '';
-        echo '<li><button class="category-link' . $sel . '" type="submit" name="category" value=""> <i class="fas fa-list me-2"></i>' . esc_html__( 'Todas', 'wp-plugin-booking' ) . '<span class="float-end"><i class="fas fa-chevron-right"></i></span></button></li>';
-        foreach ( $terms as $term ) {
-            $sel = $active === $term->term_id ? ' active' : '';
-            echo '<li><button class="category-link' . $sel . '" type="submit" name="category" value="' . esc_attr( $term->term_id ) . '"><i class="fas fa-map-marker-alt me-2"></i>' . esc_html( $term->name ) . '<span class="float-end"><i class="fas fa-chevron-right"></i></span></button></li>';
-        }
-        echo '</ul></form></aside>';
-
         echo '<div class="wpb-content">';
         echo '<form class="wpb-filters d-flex flex-wrap align-items-center mb-3" method="get">';
         echo '<input type="hidden" name="category" value="' . esc_attr( $category ) . '" />';
@@ -731,37 +720,52 @@ class WP_Plugin_Booking {
            $rating    = floatval( get_post_meta( $id, '_wpb_rating', true ) );
            $discount  = floatval( get_post_meta( $id, '_wpb_discount_percent', true ) );
            $disc_min  = absint( get_post_meta( $id, '_wpb_discount_min', true ) );
+           $image_url = get_the_post_thumbnail_url( $id, 'large' );
            echo '<div class="col-md-6 col-lg-4 mb-4 wpb-service">';
-           echo '<div class="card service-card rounded-4 h-100">';
-
-            echo get_the_post_thumbnail( $id, 'medium', array( 'class' => 'card-img-top' ) );
-            echo '<div class="card-body d-flex flex-column">';
-            if ( $cats && ! is_wp_error( $cats ) ) {
-                $first = $cats[0];
-                echo '<span class="badge bg-secondary mb-2">' . esc_html( $first->name ) . '</span>';
-            }
-            echo '<h5 class="card-title">' . esc_html( get_the_title() ) . '</h5>';
-            if ( $rating ) {
-                echo '<p class="wpb-rating mb-1"><i class="fas fa-star text-warning me-1"></i>' . number_format_i18n( $rating, 1 ) . '</p>';
-            }
-            if ( $location ) {
-                echo '<p class="wpb-location"><i class="fas fa-map-marker-alt me-1"></i>' . esc_html( $location ) . '</p>';
-            }
+           echo '<div class="hotel-card" style="background-image:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url(' . esc_url( $image_url ) . ');">';
 
             if ( $price ) {
                 $price_html = function_exists( 'wc_price' )
                     ? wc_price( $price, array( 'currency' => 'DOP' ) )
                     : number_format_i18n( $price, 2 ) . ' DOP';
-                echo '<p class="wpb-price mb-1">' . wp_kses_post( $price_html ) . '</p>';
+                echo '<div class="price-tag"><span class="currency">Desde</span> ' . wp_kses_post( $price_html ) . '</div>';
             }
+            if ( $discount > 0 ) {
+                echo '<div class="sale-badge">' . sprintf( esc_html__( 'Oferta %d%%', 'wp-plugin-booking' ), $discount ) . '</div>';
+            }
+
+            echo '<div class="hotel-info">';
+            if ( $rating ) {
+                $stars = '';
+                for ( $i = 0; $i < 5; $i++ ) {
+                    $stars .= '<span class="star">' . ( $i < round( $rating ) ? '&#9733;' : '&#9734;' ) . '</span>';
+                }
+                echo '<div class="stars">' . $stars . '</div>';
+            }
+            echo '<h2 class="hotel-name">' . esc_html( get_the_title() ) . '</h2>';
+            if ( $location ) {
+                echo '<div class="location"><span class="location-icon">&#128205;</span>' . esc_html( $location ) . '</div>';
+            }
+            echo '<div class="rating-section">';
+            echo '<div class="rating-info">';
             if ( $remaining > 0 ) {
-                echo '<p class="wpb-remaining">' . sprintf( esc_html__( 'Cupos: %d', 'wp-plugin-booking' ), $remaining ) . '</p>';
-                echo '<button class="btn btn-danger mt-auto wpb-book-button" data-bs-toggle="modal" data-bs-target="#wpb-modal-' . esc_attr( $id ) . '" data-service-id="' . esc_attr( $id ) . '">' . esc_html__( 'Reservar', 'wp-plugin-booking' ) . '</button>';
+                echo '<span class="rating-label">' . sprintf( esc_html__( 'Cupos: %d', 'wp-plugin-booking' ), $remaining ) . '</span>';
             } else {
-                echo '<span class="badge bg-danger wpb-soldout">' . esc_html__( 'AGOTADO', 'wp-plugin-booking' ) . '</span>';
+                echo '<span class="rating-label">' . esc_html__( 'Agotado', 'wp-plugin-booking' ) . '</span>';
             }
-            echo '</div>'; // card-body
-            echo '</div>'; // card
+            echo '</div>';
+            if ( $rating ) {
+                echo '<div class="rating-score">' . number_format_i18n( $rating, 1 ) . '</div>';
+            }
+            echo '</div>';
+
+            if ( $remaining > 0 ) {
+                echo '<button class="btn btn-danger mt-3 wpb-book-button" data-bs-toggle="modal" data-bs-target="#wpb-modal-' . esc_attr( $id ) . '" data-service-id="' . esc_attr( $id ) . '">' . esc_html__( 'Reservar', 'wp-plugin-booking' ) . '</button>';
+            } else {
+                echo '<span class="badge bg-danger wpb-soldout mt-3">' . esc_html__( 'AGOTADO', 'wp-plugin-booking' ) . '</span>';
+            }
+            echo '</div>'; // hotel-info
+            echo '</div>'; // hotel-card
             echo '<div class="modal fade" id="wpb-modal-' . esc_attr( $id ) . '" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">';
 
             echo '<div class="modal-dialog modal-dialog-centered modal-lg">';
@@ -948,20 +952,11 @@ class WP_Plugin_Booking {
         echo '</div>'; // wpb-container
         echo '</section>';
 
-        $premium_title = get_option( 'wpb_premium_title', '✨ Servicios Premium ✨' );
-        $premium_text  = get_option( 'wpb_premium_text', '¿Buscas algo completamente personalizado? Nuestro equipo diseña experiencias únicas para ti.' );
         $phone  = get_option( 'wpb_contact_phone', '+1 (555) 123-4567' );
         $email  = get_option( 'wpb_contact_email', 'info@paraisoturistico.com' );
         $url    = get_option( 'wpb_contact_url', 'https://www.paraisoturistico.com' );
-        echo '<div class="premium-banner p-5 text-center">';
-        echo '<h2 class="premium-title mb-3">' . esc_html( $premium_title ) . '</h2>';
-        echo '<p class="premium-text mb-4">' . esc_html( $premium_text ) . '</p>';
-        echo '<div class="row justify-content-center g-3">';
-        echo '<div class="col-md-4"><div class="contact-item"><i class="fas fa-phone"></i><span>' . esc_html( $phone ) . '</span></div></div>';
-        echo '<div class="col-md-4"><div class="contact-item"><i class="fas fa-envelope"></i><span>' . esc_html( $email ) . '</span></div></div>';
-        echo '<div class="col-md-4"><div class="contact-item"><i class="fas fa-globe"></i><span>' . esc_html( $url ) . '</span></div></div>';
-        echo '</div></div>';
-        echo '<footer class="wpb-footer text-center text-white mt-5 p-4">';
+        echo '<footer class="wpb-footer text-center text-white p-4">';
+        echo '<p class="mb-2"><i class="fas fa-phone me-1"></i>' . esc_html( $phone ) . ' | <i class="fas fa-envelope me-1"></i>' . esc_html( $email ) . ' | <i class="fas fa-globe me-1"></i>' . esc_html( $url ) . '</p>';
         echo '<p class="mb-0">&copy; ' . date( 'Y' ) . ' ' . esc_html( $logo ) . '</p>';
         echo '</footer>';
         echo '</main>';
