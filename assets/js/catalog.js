@@ -1,4 +1,6 @@
 jQuery(document).ready(function($){
+    // Ensure modals are attached to <body> so the backdrop covers everything
+    $('.wpb-service .modal').appendTo('body');
     $('.wpb-booking-form').each(function(){
         var form = $(this);
         var steps = form.find('.wpb-step');

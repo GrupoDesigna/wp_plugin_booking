@@ -712,14 +712,16 @@ class WP_Plugin_Booking {
 
             if ( $gallery ) {
                 $ids = array_filter( array_map( 'absint', explode( ',', $gallery ) ) );
+                echo '<div class="wpb-gallery d-flex flex-wrap mb-3">';
                 foreach ( $ids as $img_id ) {
                     $thumb = wp_get_attachment_image_src( $img_id, 'medium' );
                     $full  = wp_get_attachment_image_src( $img_id, 'large' );
                     if ( $thumb ) {
-                        $full_url  = $full ? $full[0] : $thumb[0];
+                        $full_url = $full ? $full[0] : $thumb[0];
                         echo '<img src="' . esc_url( $thumb[0] ) . '" data-full="' . esc_url( $full_url ) . '" class="wpb-gallery-thumb wpb-expand-image" />';
                     }
                 }
+                echo '</div>';
             }
             if ( $video ) {
                 $embed = wp_oembed_get( esc_url( $video ) );
