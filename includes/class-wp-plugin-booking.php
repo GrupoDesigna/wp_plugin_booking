@@ -691,18 +691,17 @@ class WP_Plugin_Booking {
         ob_start();
         $logo = get_option( 'wpb_front_title', 'Aventura Tours' );
         echo '<header class="wpb-header"><nav><div class="logo">' . esc_html( $logo ) . '</div>';
-        echo '<form method="get" class="header-search me-auto"><input type="text" name="s" value="' . esc_attr( $search ) . '" placeholder="' . esc_attr__( 'Buscar...', 'wp-plugin-booking' ) . '" /></form>';
-        echo '<a href="' . esc_url( wp_login_url() ) . '" class="btn btn-light login-btn">' . esc_html__( 'Ingresar', 'wp-plugin-booking' ) . '</a></nav></header>';
+        if ( is_user_logged_in() ) {
+            $current_user = wp_get_current_user();
+            echo '<span class="text-white ms-auto">' . sprintf( esc_html__( 'Hola, %s', 'wp-plugin-booking' ), esc_html( $current_user->display_name ) ) . '</span>';
+        } else {
+            echo '<a href="' . esc_url( wp_login_url() ) . '" class="btn btn-light login-btn ms-auto"><i class="fas fa-sign-in-alt me-1"></i>Login In</a>';
+        }
+        echo '</nav></header>';
         echo '<main class="wpb-main">';
         echo '<div class="wpb-container">';
 
         echo '<div class="wpb-content">';
-        echo '<form class="wpb-filters d-flex flex-wrap align-items-center mb-3" method="get">';
-        echo '<input type="hidden" name="category" value="' . esc_attr( $category ) . '" />';
-        echo '<div class="me-2 flex-grow-1"><input type="text" name="s" value="' . esc_attr( $search ) . '" class="form-control" placeholder="' . esc_attr__( 'Buscar...', 'wp-plugin-booking' ) . '"></div>';
-        echo '<div class="me-2"><select name="orderby" class="form-select"><option value="">' . esc_html__( 'Ordenar por', 'wp-plugin-booking' ) . '</option><option value="name"' . selected( $orderby, 'name', false ) . '>' . esc_html__( 'Nombre', 'wp-plugin-booking' ) . '</option><option value="price"' . selected( $orderby, 'price', false ) . '>' . esc_html__( 'Precio', 'wp-plugin-booking' ) . '</option><option value="category"' . selected( $orderby, 'category', false ) . '>' . esc_html__( 'Categoría', 'wp-plugin-booking' ) . '</option></select></div>';
-        echo '<button class="btn btn-danger">' . esc_html__( 'Filtrar', 'wp-plugin-booking' ) . '</button>';
-        echo '</form>';
 
         echo '<div class="row wpb-catalog">';
         while ( $query->have_posts() ) {
