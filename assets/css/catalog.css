@@ -139,9 +139,9 @@
 
 .wpb-catalog {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: 1fr;
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem 5% 4rem;
   opacity: 0;
@@ -162,10 +162,17 @@
   transform: translateY(-8px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
-.wpb-service .card-img-top {
+.service-horizontal {
+  display: flex;
+  align-items: center;
+}
+.service-img {
+  width: 40%;
   height: 180px;
   object-fit: cover;
-  border-bottom: 1px solid #f0f0f0;
+}
+.service-horizontal .card-body {
+  flex: 1;
 }
 .wpb-price {
   font-weight: bold;
@@ -407,31 +414,10 @@ body.modal-open {
 
 /* Two column catalog layout */
 .wpb-container {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 5%;
 }
-.wpb-sidebar {
-  background: #f1f1f1;
-  padding: 1rem;
-  border-radius: 8px;
-  min-width: 200px;
-}
-.category-menu { list-style: none; padding: 0; margin: 0; }
-.category-link {
-  border: none;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  padding: .5rem .75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #333;
-  border-radius: 4px;
-}
-.category-link:hover,
-.category-link.active { background: #e0e0e0; }
 .cart-btn { position: relative; color: #2c3e50; }
 .cart-count {
   position: absolute;
@@ -447,11 +433,11 @@ body.modal-open {
 .wpb-filters input { min-width: 150px; }
 @media (max-width:768px){
   .wpb-container{flex-direction:column;}
-  .wpb-sidebar{width:100%;}
 }
 
 .wpb-footer{
   background:#0d47a1;
   color:#fff;
+  padding:20px 0;
 }
 
