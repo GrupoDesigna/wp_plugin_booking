@@ -49,11 +49,21 @@
 
 .wpb-catalog-page {
   background: var(--wpb-cat-bg);
-
   color: #333;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
+  position: relative;
+}
+
+.wpb-catalog-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Header navigation */
@@ -128,7 +138,9 @@
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 5%;
+  padding: 2rem 5% 4rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease 0.2s forwards;
 }
 
 .wpb-service .card {
@@ -295,7 +307,7 @@
 
 .hero {
   text-align: center;
-  padding: 4rem 5%;
+  padding: 2.5rem 5% 1.5rem;
   color: #2c3e50;
   background: var(--wpb-cat-bg);
 }
@@ -308,10 +320,10 @@
   letter-spacing: 2px;
   animation: fadeInUp 1s ease;
 }
-.hero-subtitle {
+.hero-intro {
   font-size: var(--wpb-cat-sub-size);
   color: var(--wpb-cat-sub-color);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   font-weight: 300;
   text-align: var(--wpb-cat-sub-align);
   animation: fadeInUp 1s ease 0.3s both;
@@ -356,7 +368,7 @@
 
 @media (max-width:768px){
   .hero-title{font-size:2.5rem;}
-  .hero-subtitle{font-size:1.1rem;}
+  .hero-intro{font-size:1.1rem;}
   .premium-title{font-size:1.8rem;}
 }
 
