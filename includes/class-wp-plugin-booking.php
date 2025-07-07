@@ -599,57 +599,72 @@ class WP_Plugin_Booking {
             'nonce'    => wp_create_nonce( 'wpb_booking_nonce' ),
         ) );
 
+        $search   = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
+        $category = ! empty( $_GET['category'] ) ? absint( $_GET['category'] ) : 0;
+        $orderby  = isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : '';
+
         $args = array(
             'post_type'      => 'wpb_service',
             'posts_per_page' => -1,
-            's'              => isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '',
+            's'              => $search,
         );
 
-        if ( ! empty( $_GET['category'] ) ) {
+        if ( $category ) {
             $args['tax_query'] = array(
                 array(
                     'taxonomy' => 'wpb_service_category',
                     'field'    => 'term_id',
-                    'terms'    => absint( $_GET['category'] ),
+                    'terms'    => $category,
                 ),
             );
         }
 
+        if ( 'price' === $orderby ) {
+            $args['meta_key'] = '_wpb_price_per_person';
+            $args['orderby']  = 'meta_value_num';
+        } elseif ( 'name' === $orderby ) {
+            $args['orderby'] = 'title';
+            $args['order']   = 'ASC';
+        }
+
         $query = new WP_Query( $args );
+        if ( 'category' === $orderby ) {
+            $posts = $query->posts;
+            usort( $posts, function ( $a, $b ) {
+                $cat_a  = get_the_terms( $a->ID, 'wpb_service_category' );
+                $cat_b  = get_the_terms( $b->ID, 'wpb_service_category' );
+                $name_a = ( $cat_a && ! is_wp_error( $cat_a ) ) ? $cat_a[0]->name : '';
+                $name_b = ( $cat_b && ! is_wp_error( $cat_b ) ) ? $cat_b[0]->name : '';
+                return strcasecmp( $name_a, $name_b );
+            } );
+            $query->posts = $posts;
+        }
 
         ob_start();
         $logo = get_option( 'wpb_front_title', 'Aventura Tours' );
-        echo '<header class="wpb-header"><nav><div class="logo">' . esc_html( $logo ) . '</div></nav></header>';
-        echo '<div class="floating-elements"><div class="floating-circle circle1"></div><div class="floating-circle circle2"></div><div class="floating-circle circle3"></div></div>';
+        echo '<header class="wpb-header"><nav><div class="logo">' . esc_html( $logo ) . '</div><div class="actions"><a href="' . esc_url( wp_login_url() ) . '" class="btn btn-link login-btn">' . esc_html__( 'Ingresar', 'wp-plugin-booking' ) . '</a><a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i><span class="cart-count">0</span></a></div></nav></header>';
         echo '<main class="wpb-main">';
-        $hero_title    = get_option( 'wpb_cat_title_text', get_option( 'wpb_front_title', 'Descubre el Mundo' ) );
-        $hero_subtitle = get_option( 'wpb_cat_subtitle_text', get_option( 'wpb_front_subtitle', 'Experiencias inolvidables te esperan' ) );
-
-        echo '<section class="hero">';
-        echo '<h1 class="hero-title">' . esc_html( $hero_title ) . '</h1>';
-        echo '<p class="hero-intro">' . esc_html( $hero_subtitle ) . '</p>';
-        echo '</section>';
-        echo '<section class="catalog" id="tours">';
-        echo '<div class="wpb-catalog-search text-center mb-4">';
-        echo '<form class="row row-cols-sm-auto g-2 justify-content-center" method="get">';
+        echo '<div class="wpb-container">';
 
         $terms = get_terms( array( 'taxonomy' => 'wpb_service_category', 'hide_empty' => false ) );
-        echo '<div class="col">';
-        echo '<select name="category" class="form-select"><option value="">' . esc_html__( 'Todas las categorías', 'wp-plugin-booking' ) . '</option>';
+        echo '<aside class="wpb-sidebar"><form method="get"><ul class="category-menu">';
+        $active = $category ? $category : 0;
+        $sel    = 0 === $active ? ' active' : '';
+        echo '<li><button class="category-link' . $sel . '" type="submit" name="category" value=""> <i class="fas fa-list me-2"></i>' . esc_html__( 'Todas', 'wp-plugin-booking' ) . '<span class="float-end"><i class="fas fa-chevron-right"></i></span></button></li>';
         foreach ( $terms as $term ) {
-            $selected = selected( isset( $_GET['category'] ) ? absint( $_GET['category'] ) : '', $term->term_id, false );
-            echo '<option value="' . esc_attr( $term->term_id ) . '" ' . $selected . '>' . esc_html( $term->name ) . '</option>';
+            $sel = $active === $term->term_id ? ' active' : '';
+            echo '<li><button class="category-link' . $sel . '" type="submit" name="category" value="' . esc_attr( $term->term_id ) . '"><i class="fas fa-map-marker-alt me-2"></i>' . esc_html( $term->name ) . '<span class="float-end"><i class="fas fa-chevron-right"></i></span></button></li>';
         }
-        echo '</select>';
-        echo '</div>';
-        $btn_text = get_option( 'wpb_cat_btn_text', __( 'Filtrar', 'wp-plugin-booking' ) );
-        echo '<div class="col-auto">';
-        echo '<button type="submit" class="btn btn-danger">' . esc_html( $btn_text ) . '</button>';
+        echo '</ul></form></aside>';
 
-        echo '</div>';
+        echo '<div class="wpb-content">';
+        echo '<form class="wpb-filters d-flex flex-wrap align-items-center mb-3" method="get">';
+        echo '<input type="hidden" name="category" value="' . esc_attr( $category ) . '" />';
+        echo '<div class="me-2 flex-grow-1"><input type="text" name="s" value="' . esc_attr( $search ) . '" class="form-control" placeholder="' . esc_attr__( 'Buscar...', 'wp-plugin-booking' ) . '"></div>';
+        echo '<div class="me-2"><select name="orderby" class="form-select"><option value="">' . esc_html__( 'Ordenar por', 'wp-plugin-booking' ) . '</option><option value="name"' . selected( $orderby, 'name', false ) . '>' . esc_html__( 'Nombre', 'wp-plugin-booking' ) . '</option><option value="price"' . selected( $orderby, 'price', false ) . '>' . esc_html__( 'Precio', 'wp-plugin-booking' ) . '</option><option value="category"' . selected( $orderby, 'category', false ) . '>' . esc_html__( 'Categoría', 'wp-plugin-booking' ) . '</option></select></div>';
+        echo '<button class="btn btn-danger">' . esc_html__( 'Filtrar', 'wp-plugin-booking' ) . '</button>';
         echo '</form>';
-        echo '</div>';
-        
+
         echo '<div class="row wpb-catalog">';
         while ( $query->have_posts() ) {
             $query->the_post();
@@ -870,7 +885,9 @@ class WP_Plugin_Booking {
             echo '</div>';
         }
         wp_reset_postdata();
-        echo '</div>';
+        echo '</div>'; // row
+        echo '</div>'; // wpb-content
+        echo '</div>'; // wpb-container
         echo '</section>';
 
         $premium_title = get_option( 'wpb_premium_title', '✨ Servicios Premium ✨' );
@@ -886,7 +903,6 @@ class WP_Plugin_Booking {
         echo '<div class="col-md-4"><div class="contact-item"><i class="fas fa-envelope"></i><span>' . esc_html( $email ) . '</span></div></div>';
         echo '<div class="col-md-4"><div class="contact-item"><i class="fas fa-globe"></i><span>' . esc_html( $url ) . '</span></div></div>';
         echo '</div></div>';
-        echo '</div>';
         echo '</main>';
 
         return ob_get_clean();
